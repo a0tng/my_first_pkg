@@ -24,14 +24,17 @@ def main():
     nav = BasicNavigator()
     nav.waitUntilNav2Active()                      # AMCL·planner 준비 대기
 
-    goal = make_pose(nav, 1.5, 0.5)
-    nav.goToPose(goal)
+    start_point = make_pose(nav, -1.88, -0.55)
+    nav.setInitialPose(start_point)
 
+    final_goal = make_pose(nav, 1.43, -0.55)
+    nav.goToPose(final_goal)
+    
     while not nav.isTaskComplete():
         fb = nav.getFeedback()
         if fb:
             print(f'남은 거리: {fb.distance_remaining:.2f} m')
-
+    
     result = nav.getResult()
     print('결과:', 'SUCCEEDED' if result == TaskResult.SUCCEEDED else result)
     rclpy.shutdown()

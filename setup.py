@@ -29,6 +29,7 @@ setup(
     entry_points={
         'console_scripts': [
             'square_driver = my_first_pkg.square_driver:main',
+            'go_to_pose = my_first_pkg.go_to_pose_202202136:main',
         ],
     },
 )
