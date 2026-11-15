@@ -3,6 +3,10 @@
 
 Nav2가 이미 떠 있는 상태에서:
   ros2 run ire_week10_nav_demo go_to_pose
+
+  git add. git commit -m "update" git push
+
+  ros2 topic echo /clicked_point
 """
 import rclpy
 from geometry_msgs.msg import PoseStamped
