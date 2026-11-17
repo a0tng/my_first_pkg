@@ -9,38 +9,58 @@ Nav2가 이미 떠 있는 상태에서:
   ros2 topic echo /clicked_point
 """
 import rclpy
+import math
 from geometry_msgs.msg import PoseStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
 
-def make_pose(nav, x, y, yaw_w=1.0):
+def make_pose(nav, x, y, yaw):
     p = PoseStamped()
     p.header.frame_id = 'map'
     p.header.stamp = nav.get_clock().now().to_msg()
-    p.pose.position.x = x
-    p.pose.position.y = y
-    p.pose.orientation.w = yaw_w
+
+    p.pose.position.x = float(x)
+    p.pose.position.y = float(y)
+
+    p.pose.orientation.z = math.sin(yaw / 2.0)
+    p.pose.orientation.w = math.cos(yaw / 2.0)
     return p
 
 
 def main():
     rclpy.init()
-    nav = BasicNavigator()
-    nav.waitUntilNav2Active()                      # AMCL·planner 준비 대기
+    nav = BasicNavigator()                     # AMCL·planner 준비 대기
 
-    start_point = make_pose(nav, -1.88, -0.55)
+    start_point = make_pose(nav, 0.0, 0.0, 0.0)
     nav.setInitialPose(start_point)
 
-    final_goal = make_pose(nav, 1.43, -0.55)
-    nav.goToPose(final_goal)
+    nav.waitUntilNav2Active() 
+
+    goals = [
+        (0.95,0.93),
+        (0.93, -0.04)
+    ]
+
+    for i, (x, y) in enumerate(goals):
+
+        if i < len(goals) - 1:
+            next_x, next_y = goals[i + 1]
+            yaw = math.atan2(next_y - y, next_x - x)
+        else:
+            prev_x, prev_y = goals[i - 1]
+            yaw = math.atan2(y - prev_y, x - prev_x)
+        
+        goal = make_pose(nav, x, y, yaw)
+        nav.goToPose(goal)
+
+        while not nav.isTaskComplete():
+            fb = nav.getFeedback()
+            if fb:
+                print(f'남은 거리: {fb.distance_remaining:.2f} m')
     
-    while not nav.isTaskComplete():
-        fb = nav.getFeedback()
-        if fb:
-            print(f'남은 거리: {fb.distance_remaining:.2f} m')
-    
-    result = nav.getResult()
-    print('결과:', 'SUCCEEDED' if result == TaskResult.SUCCEEDED else result)
+        result = nav.getResult()
+        print('결과:', 'SUCCEEDED' if result == TaskResult.SUCCEEDED else result)
+
     rclpy.shutdown()
 
 
