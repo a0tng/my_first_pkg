@@ -28,8 +28,12 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'square_driver = my_first_pkg.square_driver:main',
-            'go_to_pose = my_first_pkg.go_to_pose_202202136:main',
+            'aruco_parking = my_first_pkg.aruco_parking:main',
+            'aruco_tracker = my_first_pkg.aruco_tracker:main',
+            'go_to_pose = my_first_pkg.go_to_pose:main',
+            'pick_demo = my_first_pkg.pick_demo:main',
+            'kit_moveit_config = my_first_pkg.kit_moveit_config:main',
+            'moveit_py_demo = my_first_pkg.moveit_py_demo:main',
         ],
     },
 )
