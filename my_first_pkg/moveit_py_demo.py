@@ -35,8 +35,12 @@ from my_first_pkg import kit_moveit_config
 
 LOG = get_logger('moveit_py_demo')
 
-HOME = [0.0, -1.0, 0.7, 0.3]               # pick_demo POSES['home'] = SRDF home
-APPROACH = [0.0, 0.4, 0.2, -0.6]           # pick_demo POSES['approach']
+HOME = [0.0, -1.501, 0.8029, 0.6981]               # pick_demo POSES['home'] = SRDF home          
+READY1 = [0.0, 0.0873, 0.0, -0.1222]
+APPROACH1 = [0.0,  0.8727, -0.1047, -0.7854] # pick_demo POSES['approach']
+LIFT = [0.0,  -0.7156, 0.6458, 0.0873]
+READY2 = [1.0996, -0.7156, 0.6458, 0.0873]
+APPROACH2 = [1.0996,  0.4189, 0.5585, -0.9774]
 FRAME = 'base_footprint'                   # pose 목표 기준 좌표계 (모델 기준 좌표계)
 EE = 'end_effector_link'
 
@@ -91,28 +95,79 @@ def go_named(robot, arm, name, label):
 
 
 # ---------------------------------------------------------------- 단계
-def step1(ctx):
+def home(ctx):
     """1 named target: SRDF의 'home'."""
-    go_named(ctx['robot'], ctx['arm'], 'home', '1 named home')
-    log_joints(ctx['robot'], '1')
+    robot, arm = ctx['robot'], ctx['arm']
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(robot_state=ctx['home_state'])
+    plan_exec(robot, arm, 'home')
+    log_joints(robot, 'home')
 
+def ready1(ctx):
+    """2 관절 목표: pick_demo의 approach와 같은 관절값."""
+    robot, arm = ctx['robot'], ctx['arm']
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(robot_state=ctx['ready1_state'])
+    plan_exec(robot, arm, 'ready1')
+    log_joints(robot, 'ready1')
 
-def step2(ctx):
+def approach1(ctx):
     """2 관절 목표: pick_demo의 approach와 같은 관절값."""
     robot, arm = ctx['robot'], ctx['arm']
     ee = ctx['approach_ee']
     LOG.info(f'  approach FK: {EE} = ({ee.position.x:.3f}, {ee.position.y:.3f}, {ee.position.z:.3f}) m, '
              f'q = ({ee.orientation.x:.3f}, {ee.orientation.y:.3f}, {ee.orientation.z:.3f}, {ee.orientation.w:.3f})')
     arm.set_start_state_to_current_state()
-    arm.set_goal_state(robot_state=ctx['approach_state'])
-    plan_exec(robot, arm, '2 joint approach')
-    log_joints(robot, '2')
-    go_named(robot, arm, 'home', '2 back home')
+    arm.set_goal_state(robot_state=ctx['approach1_state'])
+    plan_exec(robot, arm, 'joint approach1')
+    log_joints(robot, 'joint approach1')
 
+def ready2(ctx):
+    """2 관절 목표: pick_demo의 approach와 같은 관절값."""
+    robot, arm = ctx['robot'], ctx['arm']
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(robot_state=ctx['ready2_state'])
+    plan_exec(robot, arm, 'ready2')
+    log_joints(robot, 'ready2')
+
+def lift(ctx):
+    """2 관절 목표: pick_demo의 approach와 같은 관절값."""
+    robot, arm = ctx['robot'], ctx['arm']
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(robot_state=ctx['lift_state'])
+    plan_exec(robot, arm, 'lift')
+    log_joints(robot, 'lift')
+
+def approach2(ctx):
+    """2 관절 목표: pick_demo의 approach와 같은 관절값."""
+    robot, arm = ctx['robot'], ctx['arm']
+    ee = ctx['approach_ee']
+    LOG.info(f'  approach FK: {EE} = ({ee.position.x:.3f}, {ee.position.y:.3f}, {ee.position.z:.3f}) m, '
+             f'q = ({ee.orientation.x:.3f}, {ee.orientation.y:.3f}, {ee.orientation.z:.3f}, {ee.orientation.w:.3f})')
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(robot_state=ctx['approach2_state'])
+    plan_exec(robot, arm, 'joint approach2')
+    log_joints(robot, 'joint approach2')
+
+def gripper_open(ctx):
+    """5 그리퍼 open (SRDF named state, GripperCommand 액션)."""
+    robot, grip = ctx['robot'], ctx['grip']
+    grip.set_start_state_to_current_state()
+    grip.set_goal_state(configuration_name='open')
+    plan_exec(robot, grip, '5 gripper open')
+    log_joints(robot, '5')
+
+def gripper_close(ctx):
+    """5 그리퍼 close (SRDF named state, GripperCommand 액션)."""
+    robot, grip = ctx['robot'], ctx['grip']
+    grip.set_start_state_to_current_state()
+    grip.set_goal_state(configuration_name='close')
+    plan_exec(robot, grip, '5 gripper close')
+    log_joints(robot, '5')
 
 def step3(ctx):
     """3 pose 목표(위치 + 방향). 4자유도라 방향을 마음대로 고를 수 없다."""
-    robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach_ee']
+    robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach1_ee']
 
     # 3a: FK와 같은 위치 + 같은 방향 → 도달 가능 → 계획 성공
     ps = PoseStamped()
@@ -159,19 +214,8 @@ def step4(ctx):
     plan_exec(robot, arm, '4 position-only')
     q = current(robot)
     LOG.info(f'  손목 각 j2+j3+j4 = {q[1] + q[2] + q[3]:+.3f} rad '
-             f'(2단계 approach: {sum(APPROACH[1:]):+.3f}) — 같은 위치여도 실행마다 달라진다')
+             f'(2단계 approach: {sum(APPROACH1[1:]):+.3f}) — 같은 위치여도 실행마다 달라진다')
     log_joints(robot, '4')
-
-
-def step5(ctx):
-    """5 그리퍼 open / close (SRDF named state, GripperCommand 액션)."""
-    robot, grip = ctx['robot'], ctx['grip']
-    for name in ('open', 'close'):
-        grip.set_start_state_to_current_state()
-        grip.set_goal_state(configuration_name=name)
-        plan_exec(robot, grip, f'5 gripper {name}')
-    log_joints(robot, '5')
-
 
 def step6(ctx):
     """6 충돌 물체 회피: 가상 상자를 planning scene에 넣고 home → approach."""
@@ -202,12 +246,12 @@ def step6(ctx):
             return scene.is_state_colliding(robot_state=s, joint_model_group_name='arm')
 
     # (2) pick_demo 방식(관절 직선 보간)이면 몇 지점이 부딪히나
-    hits = sum(colliding([h + (a - h) * k / 20 for h, a in zip(HOME, APPROACH)]) for k in range(21))
+    hits = sum(colliding([h + (a - h) * k / 20 for h, a in zip(HOME, APPROACH1)]) for k in range(21))
     LOG.info(f'  관절 직선 경로 home→approach: 21개 중 {hits}개 지점 충돌 (pick_demo처럼 보내면 상자를 친다)')
 
     # (3) MoveIt 계획·실행 (최대 3회 재시도)
     arm.set_start_state_to_current_state()
-    arm.set_goal_state(robot_state=ctx['approach_state'])
+    arm.set_goal_state(robot_state=ctx['approach1_state'])
     r6 = plan_exec(robot, arm, '6 approach with box', attempts=3)
 
     # (4) MoveIt 경로 분석
@@ -215,13 +259,11 @@ def step6(ctx):
         pts = r6.trajectory.get_robot_trajectory_msg().joint_trajectory.points
         zs = [joint_state(model, list(p.positions)[:4]).get_pose(EE).position.z for p in pts]
         bad = sum(colliding(list(p.positions)[:4]) for p in pts)
-        LOG.info(f'  MoveIt 경로: 말단 z 최저 {min(zs):.3f} m (approach: {ctx["approach_ee"].position.z:.3f}), '
+        LOG.info(f'  MoveIt 경로: 말단 z 최저 {min(zs):.3f} m (approach: {ctx["approach1_ee"].position.z:.3f}), '
                  f'충돌 지점 {bad}/{len(pts)} (0이어야 정상)')
     log_joints(robot, '6')
 
-
-STEPS = {'1': step1, '2': step2, '3': step3, '4': step4, '5': step5, '6': step6}
-
+STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1, '5': gripper_close, '6': lift, '7': ready2, '8': approach2}
 
 # ---------------------------------------------------------------- main
 def main():
@@ -240,8 +282,14 @@ def main():
         'grip': robot.get_planning_component('gripper'),
     }
     # 2·3·4·6단계가 함께 쓰는 approach 상태와 그 말단 pose(FK)
-    ctx['approach_state'] = joint_state(model, APPROACH)
-    ctx['approach_ee'] = ctx['approach_state'].get_pose(EE)
+    ctx['home_state'] = joint_state(model, HOME)
+    ctx['ready1_state'] = joint_state(model, READY1)
+    ctx['approach1_state'] = joint_state(model, APPROACH1)
+    ctx['approach1_ee'] = ctx['approach1_state'].get_pose(EE)
+    ctx['lift_state'] = joint_state(model, LIFT)
+    ctx['ready2_state'] = joint_state(model, READY2)
+    ctx['approach2_state'] = joint_state(model, APPROACH2)
+    ctx['approach2_ee'] = ctx['approach2_state'].get_pose(EE)
     LOG.info(f'model frame = {model.model_frame}, pose 목표 frame = {FRAME}, sim = {args.sim}, '
              f'속도·가속도 스케일 = 0.1')
     time.sleep(1.0)                                # /joint_states 수신 대기
