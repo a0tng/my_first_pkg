@@ -23,6 +23,10 @@ setup(
         (os.path.join('share', package_name, 'pkg_tools', 'rviz'), glob('pkg_tools/rviz/*.rviz')),
         (os.path.join('share', package_name, 'pkg_tools', 'urdf'), glob('pkg_tools/urdf/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'worlds'), glob('pkg_tools/worlds/*')),
+    ] +[
+        (os.path.join('share', package_name, root), [os.path.join(root, f) for f in files])
+        for root, dirs, files in os.walk('my_first_pkg/pkg_tools/models')
+        if files
     ],
     install_requires=['setuptools'],
     zip_safe=True,

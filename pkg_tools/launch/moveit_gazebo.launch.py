@@ -16,8 +16,7 @@ def generate_launch_description():
     model_path = PathJoinSubstitution([
         FindPackageShare('my_first_pkg'),
         'pkg_tools',
-        'urdf',
-        'turtlebot3_manipulation.urdf.xacro'
+        'models'
     ])
 
     ld.add_action(AppendEnvironmentVariable(
