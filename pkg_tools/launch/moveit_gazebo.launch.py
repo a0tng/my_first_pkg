@@ -59,18 +59,20 @@ def generate_launch_description():
         description='Whether execute rviz2')
     ld.add_action(rviz_arg)
 
-    empty_world_path = PathJoinSubstitution(
+    challenge_world_path = PathJoinSubstitution(
         [
-            FindPackageShare('turtlebot3_manipulation_bringup'),
+            FindPackageShare('my_first_pkg'),
+            'pkg_tools',
             'worlds',
-            'empty_world.model'
+            'challenge.world'
         ]
     )
 
     gazebo_control_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([bringup_launch_dir, '/gazebo.launch.py']),
         launch_arguments={
-            'world': empty_world_path,
+            'world': challenge_world_path,
+            'start_rviz': 'false',
             'x_pose': '0.0',
             'y_pose': '0.0',
             'z_pose': '0.0',

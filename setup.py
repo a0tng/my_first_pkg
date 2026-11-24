@@ -22,6 +22,7 @@ setup(
         (os.path.join('share', package_name, 'pkg_tools', 'param'), glob('pkg_tools/param/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'rviz'), glob('pkg_tools/rviz/*.rviz')),
         (os.path.join('share', package_name, 'pkg_tools', 'urdf'), glob('pkg_tools/urdf/*')),
+        (os.path.join('share', package_name, 'pkg_tools', 'worlds'), glob('pkg_tools/worlds/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

@@ -6,15 +6,18 @@ from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PythonExpression
 
 
 def generate_launch_description():
-    laucnh_mode_arg = DeclareLaunchArgument(
+    launch_mode_arg = DeclareLaunchArgument(
         'launch_mode',
         default_value='simulation',
         description='launch mode type [simulation, actual]'
     )
     launch_mode = LaunchConfiguration('launch_mode')
+
+    use_sim = PythonExpression(['"', launch_mode, '" == "simulation"'])
 
     marker_size_arg = DeclareLaunchArgument(
         'marker_size',
@@ -29,7 +32,7 @@ def generate_launch_description():
         'scenario.yaml'
     ])
 
-    laucnh_aruco_node = IncludeLaunchDescription(
+    launch_aruco = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
                 FindPackageShare('my_first_pkg'),
@@ -44,17 +47,55 @@ def generate_launch_description():
         }.items(),
     )
 
-    launch_manipulator_node = IncludeLaunchDescription(
+    launch_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
                 FindPackageShare('my_first_pkg'),
                 'pkg_tools',
                 'launch',
-                'manipulator_node.launch.py'
+                'moveit_gazebo.launch.py'
             ])
         ]),
     )
 
+    launch_nav2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare('my_first_pkg'),
+                'pkg_tools',
+                'launch',
+                'navigation2.launch.py'
+            ])
+        ]),
+        launch_arguments={
+            'use_sim': use_sim,
+            'start_rviz': 'true',
+
+            'map_yaml_file': PathJoinSubstitution([
+                FindPackageShare('my_first_pkg'),
+                'pkg_tools',
+                'map',
+                'map.yaml'
+            ]),
+
+            'params_file': PathJoinSubstitution([
+                FindPackageShare('my_first_pkg'),
+                'pkg_tools',
+                'param',
+                'turtlebot3_hsc.yaml'
+            ])
+        }.items(),
+    )
+    #launch_manipulator = IncludeLaunchDescription(
+    #   PythonLaunchDescriptionSource([
+    #        PathJoinSubstitution([
+    #            FindPackageShare('my_first_pkg'),
+    #            'pkg_tools',
+    #            'launch',
+    #            'manipulator_node.launch.py'
+    #        ])
+    #    ]),
+    #)
     core_node = Node(
             package='my_first_pkg',
             executable='core',
@@ -65,9 +106,11 @@ def generate_launch_description():
         )
 
     return LaunchDescription([
-        laucnh_mode_arg,
+        launch_mode_arg,
         marker_size_arg,
-        laucnh_aruco_node,
-        launch_manipulator_node,
+        launch_aruco,
+        launch_gazebo,
+        launch_nav2,
+        #launch_manipulator,
         core_node,
     ])
