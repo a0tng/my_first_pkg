@@ -7,6 +7,8 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import GroupAction
+from launch_ros.actions import SetRemap
 
 def generate_launch_description():
 
@@ -37,8 +39,15 @@ def generate_launch_description():
                 'use_sim': 'true',
             }.items(),
         )
-    ld.add_action(move_group_launch)
-
+    ld.add_action(
+        GroupAction([
+            SetRemap(
+                src='/robot_description',
+                dst='/moveit_robot_description '    
+            ),
+            move_group_launch
+            ])
+    )
     # gazebo_control with robot_state_publisher
     rviz_arg = DeclareLaunchArgument(
         'start_rviz',
