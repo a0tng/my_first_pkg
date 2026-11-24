@@ -1,5 +1,5 @@
 ---
-home_service_challenge_core:
+core:
   ros__parameters:
     scenario:
       room1:

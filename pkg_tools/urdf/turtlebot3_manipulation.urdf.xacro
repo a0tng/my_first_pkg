@@ -8,22 +8,22 @@
   <xacro:arg name="fake_sensor_commands" default="false" />
 
   <!-- Import materials macro -->
-  <xacro:include filename="$(find turtlebot3_home_service_challenge_tools)/gazebo/materials.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/gazebo/materials.xacro" />
 
   <!-- Include TurtleBot3 Waffle Pi urdf macro -->
-  <xacro:include filename="$(find turtlebot3_home_service_challenge_tools)/urdf/turtlebot3_waffle_pi.urdf.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/urdf/turtlebot3_waffle_pi.urdf.xacro" />
 
   <!-- Include TurtleBot3 Waffle Pi gazebo macro -->
-  <xacro:include filename="$(find turtlebot3_home_service_challenge_tools)/gazebo/turtlebot3_waffle_pi.gazebo.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/gazebo/turtlebot3_waffle_pi.gazebo.xacro" />
 
   <!-- Include OpenManipulator-X urdf macro -->
-  <xacro:include filename="$(find turtlebot3_home_service_challenge_tools)/urdf/open_manipulator_x.urdf.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/urdf/open_manipulator_x.urdf.xacro" />
 
   <!-- Include OpenManipulator-X gazebo macro -->
-  <xacro:include filename="$(find turtlebot3_home_service_challenge_tools)/gazebo/open_manipulator_x.gazebo.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/gazebo/open_manipulator_x.gazebo.xacro" />
 
   <!-- Include TurtleBot3 Manipulation ros2 control macro -->
-  <xacro:include filename="$(find turtlebot3_manipulation_description)/ros2_control/turtlebot3_manipulation_system.ros2_control.xacro" />
+  <xacro:include filename="$(find my_first_pkg)/ros2_control/turtlebot3_manipulation_system.ros2_control.xacro" />
 
   <xacro:turtlebot3_waffle_pi prefix="$(arg prefix)" />
   <xacro:turtlebot3_waffle_pi_gazebo prefix="$(arg prefix)" />
