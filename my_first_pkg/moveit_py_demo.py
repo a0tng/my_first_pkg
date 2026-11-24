@@ -61,7 +61,7 @@ def plan_exec(robot, comp, label, execute=True, attempts=1):
              f'exec={ex if execute else "(계획만)"}')
     if not ok:
         raise RuntimeError(f'[{label}] 계획 실패')
-    if execute and ex != 'SUCCESS':
+    if execute and ex != 'SUCCESSED':
         raise RuntimeError(f'[{label}] 실행 실패: {ex}')
     return res
 
@@ -279,9 +279,9 @@ class ManipulatorControl(Node):
         self.get_logger().info('Manipulator ready.')
 
     def control_callback(self, msg: String):
-        if msg.data == 'pick':
+        if msg.data == 'pick target':
             sequence = ['1', '2', '3', '4', '5', '6']
-        elif msg.data == 'place':
+        elif msg.data == 'place target':
             sequence = ['7', '8', '9', '10']
         else:
             self.get_logger().warn(f'Unknown command: {msg.data}')
@@ -357,7 +357,7 @@ def main():
         rclpy.try_shutdown()
         sys.stdout.flush()
         sys.stderr.flush()
-        os.exit(code)
+        os._exit(code)
 
 if __name__ == '__main__':
     main()
