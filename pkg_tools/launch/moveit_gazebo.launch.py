@@ -7,22 +7,16 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import AppendEnvironmentVariable
-
 
 def generate_launch_description():
 
     ld = LaunchDescription()
-    model_path = PathJoinSubstitution([
-        FindPackageShare('my_first_pkg'),
+    model_path = os.path.join(
+        get_package_share_directory('my_first_pkg'),
         'pkg_tools',
-        'models'
-    ])
-
-    ld.add_action(AppendEnvironmentVariable(
-        name='GAZEBO_MODEL_PATH',
-        value=model_path
-    ))
+        'models',
+    )
+    os.environ["GAZEBO_MODEL_PATH"] = (model_path + os.pathsep + os.environ.get("GAZEBO_MODEL_PATH", ""))
     launch_dir = os.path.join(
         get_package_share_directory(
             'turtlebot3_manipulation_moveit_config'), 'launch')

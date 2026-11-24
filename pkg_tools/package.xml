@@ -25,5 +25,6 @@
   <exec_depend>turtlebot3_manipulation_navigation2</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="$prefix/share/my_first_pkg/models"/>
   </export>
 </package>
