@@ -31,7 +31,7 @@ setup(
             'aruco_parking = my_first_pkg.aruco_parking:main',
             'aruco_tracker = my_first_pkg.aruco_tracker:main',
             'go_to_pose = my_first_pkg.go_to_pose:main',
-            'pick_demo = my_first_pkg.pick_demo:main',
+            'core = my_first_pkg.core:main',
             'kit_moveit_config = my_first_pkg.kit_moveit_config:main',
             'moveit_py_demo = my_first_pkg.moveit_py_demo:main',
         ],
