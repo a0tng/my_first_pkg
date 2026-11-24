@@ -13,12 +13,6 @@ from launch_ros.actions import SetRemap
 def generate_launch_description():
 
     ld = LaunchDescription()
-    model_path = os.path.join(
-        get_package_share_directory('my_first_pkg'),
-        'pkg_tools',
-        'models',
-    )
-    os.environ["GAZEBO_MODEL_PATH"] = (model_path + os.pathsep + os.environ.get("GAZEBO_MODEL_PATH", ""))
     launch_dir = os.path.join(
         get_package_share_directory(
             'turtlebot3_manipulation_moveit_config'), 'launch')
@@ -43,7 +37,7 @@ def generate_launch_description():
         GroupAction([
             SetRemap(
                 src='/robot_description',
-                dst='/moveit_robot_description '    
+                dst='/moveit_robot_description'    
             ),
             move_group_launch
             ])
