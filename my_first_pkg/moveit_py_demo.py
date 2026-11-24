@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-"""11주차 — MoveIt API(moveit_py)로 팔 움직이기.
-
-pick_demo(관절 궤적을 arm_controller에 직접 전송)와 같은 팔을 MoveIt 계획으로 움직인다.
-
-  ros2 run ire_week11_moveit moveit_py_demo --sim --step all   # Gazebo
-  ros2 run ire_week11_moveit moveit_py_demo --step 1           # 실물 (한 단계씩)
-
-단계
-  1  named target ('home', SRDF)
-  2  관절 목표 (pick_demo의 'approach'와 같은 값)
-  3  pose 목표(위치 + 방향) — 3a 도달 가능한 방향은 성공, 3b yaw 45°는 실패(4자유도 한계, 정상)
-  4  위치만 목표 — 성공하지만 손목 각은 IK가 정한다
-  5  그리퍼 open / close
-  6  충돌 물체(가상 상자) 회피 — 관절 직선 경로는 부딪히고, MoveIt 경로는 돌아간다
-
-move_group 없이도 동작한다 (moveit_py가 자체 planning scene과 실행기를 가진다).
-"""
 import argparse
 import copy
 import math
@@ -25,6 +7,8 @@ import time
 
 import rclpy
 from rclpy.logging import get_logger
+from rclpy.node import Node
+from std_msgs.msg import String, Bool
 from moveit.planning import MoveItPy
 from moveit.core.robot_state import RobotState
 from geometry_msgs.msg import PoseStamped, Pose
@@ -75,8 +59,11 @@ def plan_exec(robot, comp, label, execute=True, attempts=1):
     ex = robot.execute(comp.planning_group_name, res.trajectory, blocking=True).status if (ok and execute) else None
     LOG.info(f'[{label}] plan={"OK" if ok else "FAIL"} (try {k + 1}/{attempts}, plan {t_plan:.2f}s, {n} pts) '
              f'exec={ex if execute else "(계획만)"}')
-    return res if ok else None
-
+    if not ok:
+        raise RuntimeError(f'[{label}] 계획 실패')
+    if execute and ex != 'SUCCESS':
+        raise RuntimeError(f'[{label}] 실행 실패: {ex}')
+    return res
 
 def joint_state(model, q):
     """팔 관절값 q의 RobotState. 생성 직후 set_to_default_values() 필수 (안 하면 그리퍼·바퀴에 쓰레기 값)."""
@@ -272,9 +259,49 @@ def approach1_obstacle(ctx):
 
 STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_position, '5': gripper_close, '6': lift, '7': ready2, '8': approach2_position, '9': gripper_open, '10': home}
 
+class ManipulatorControl(Node):
+
+    def __init__(self, ctx):
+        super().__init__('manipulator_control')
+        self.ctx = ctx
+        self.sub = self.create_subscription(
+            String,
+            '/manipulator_control',
+            self.control_callback,
+            10
+        )
+
+        self.pub = self.create_publisher(
+            Bool,
+            '/is_manipulator_completed',
+            10
+        )
+        self.get_logger().info('Manipulator ready.')
+
+    def control_callback(self, msg: String):
+        if msg.data == 'pick':
+            sequence = ['1', '2', '3', '4', '5', '6']
+        elif msg.data == 'place':
+            sequence = ['7', '8', '9', '10']
+        else:
+            self.get_logger().warn(f'Unknown command: {msg.data}')
+            return
+        
+        result = Bool()
+
+        try:
+            for step in sequence:
+                STEPS[step](self.ctx)
+            result.data = True
+        except Exception as e:
+            self.get_logger().error(str(e))
+            result.data = False
+        self.pub.publish(result)
+
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser(description='moveit_py 6단계 예제')
+    ap.add_argument('--serve', action='store_true')
     ap.add_argument('--step', default='all', choices=list(STEPS) + ['all'], help='1~6 또는 all (기본 all)')
     ap.add_argument('--sim', action='store_true', help='Gazebo: use_sim_time=True')
     args, _ = ap.parse_known_args(rclpy.utilities.remove_ros_args(sys.argv)[1:])
@@ -302,11 +329,25 @@ def main():
     time.sleep(1.0)                                # /joint_states 수신 대기
 
     code = 0
+
     try:
-        for key in (STEPS if args.step == 'all' else [args.step]):
-            LOG.info(f'===== {key}단계: {STEPS[key].__doc__.splitlines()[0]} =====')
-            STEPS[key](ctx)
-        LOG.info('done')
+        if args.serve:
+            node = ManipulatorControl(ctx)
+
+            try:
+                rclpy.spin(node)
+            finally:
+                node.destroy_node()
+        else:
+            for key in(
+                STEPS if args.step == 'all' 
+                else [args.step]
+            ):
+                STEPS[key](ctx)
+            LOG.info('모든 단계 완료')
+
+    except KeyboardInterrupt:
+        pass
     except Exception:
         import traceback
         traceback.print_exc()
@@ -314,12 +355,9 @@ def main():
     finally:
         robot.shutdown()
         rclpy.try_shutdown()
-        # Humble apt moveit_py(2.5.10)는 MoveItPy 객체를 파괴할 때(파이썬 종료 시) segfault가 난다
-        # (TrajectoryExecutionManager 내부 노드 소멸 중). 동작과는 무관 → 소멸자를 건너뛰고 바로 종료한다.
         sys.stdout.flush()
         sys.stderr.flush()
-        os._exit(code)
-
+        os.exit(code)
 
 if __name__ == '__main__':
     main()

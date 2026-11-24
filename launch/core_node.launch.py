@@ -86,16 +86,13 @@ def generate_launch_description():
             ])
         }.items(),
     )
-    #launch_manipulator = IncludeLaunchDescription(
-    #   PythonLaunchDescriptionSource([
-    #        PathJoinSubstitution([
-    #            FindPackageShare('my_first_pkg'),
-    #            'pkg_tools',
-    #            'launch',
-    #            'manipulator_node.launch.py'
-    #        ])
-    #    ]),
-    #)
+    
+    launch_manipulator = Node(
+        package='my_first_pkg',
+        executable='moveit_py_demo',
+        arguments=['--sim', '--serve',],
+        output='screen',
+    )
     core_node = Node(
             package='my_first_pkg',
             executable='core',
@@ -111,6 +108,6 @@ def generate_launch_description():
         launch_aruco,
         launch_gazebo,
         launch_nav2,
-        #launch_manipulator,
+        launch_manipulator,
         core_node,
     ])
