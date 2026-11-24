@@ -28,7 +28,7 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    start_rviz = LaunchConfiguration('start_rviz')
+    start_rviz = LaunchConfiguration('nav2_start_rviz')
     use_sim = LaunchConfiguration('use_sim')
     map_yaml_file = LaunchConfiguration('map_yaml_file')
     params_file = LaunchConfiguration('params_file')
@@ -88,7 +88,7 @@ def generate_launch_description():
     return LaunchDescription([
 
         DeclareLaunchArgument(
-            'start_rviz',
+            'nav2_start_rviz',
             default_value='true',
             description='Whether execute rviz2'),
 

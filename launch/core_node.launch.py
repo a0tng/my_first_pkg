@@ -69,7 +69,7 @@ def generate_launch_description():
         ]),
         launch_arguments={
             'use_sim': use_sim,
-            'start_rviz': 'true',
+            'nav2_start_rviz': 'true',
 
             'map_yaml_file': PathJoinSubstitution([
                 FindPackageShare('my_first_pkg'),
