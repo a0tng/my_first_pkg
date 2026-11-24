@@ -61,7 +61,7 @@ def plan_exec(robot, comp, label, execute=True, attempts=1):
              f'exec={ex if execute else "(계획만)"}')
     if not ok:
         raise RuntimeError(f'[{label}] 계획 실패')
-    if execute and ex != 'SUCCEED':
+    if execute and ex != 'SUCCEEDED':
         raise RuntimeError(f'[{label}] 실행 실패: {ex}')
     return res
 
