@@ -72,6 +72,34 @@ def generate_launch_description():
         }.items(),
     )
     
+    launch_base = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource([
+        PathJoinSubstitution([
+            FindPackageShare('my_first_pkg'),
+            'pkg_tools',
+            'launch',
+            'base.launch.py'
+        ])
+    ]),
+    launch_arguments={
+        'use_sim': 'false',
+        'use_fake_hardware': 'false',
+    }.items(),
+)
+    launch_move_group = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource([
+        PathJoinSubstitution([
+            FindPackageShare('my_first_pkg'),
+            'pkg_tools',
+            'launch',
+            'move_group.launch.py'
+        ])
+    ]),
+    launch_arguments={
+        'use_sim': 'false',
+    }.items(),
+)
+    
     launch_manipulator = Node(
         package='my_first_pkg',
         executable='moveit_py_demo',
