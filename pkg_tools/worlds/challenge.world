@@ -67,13 +67,7 @@
     <physics name='default_physics' default='0' type='ode'>
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
-      <ode>
-        <constraints>
-          <contact_max_correcting_vel>0.1</contact_max_correcting_vel>
-          <contact_surface_layer>0.001</contact_surface_layer>
-        </constraints>
-      </ode>  
+      <real_time_update_rate>1000</real_time_update_rate> 
     </physics>
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
@@ -1473,17 +1467,17 @@
           <mass>0.02</mass>
           <inertia>
             <ixx>0.000003</ixx>
-            <ixy>0.000003</ixy>
-            <ixz>0.000003</ixz>
-            <iyy>0</iyy>
+            <iyy>0.000003</iyy>
+            <izz>0.000003</izz>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
             <iyz>0</iyz>
-            <izz>0</izz>
           </inertia>
         </inertial>
        <collision name='collision'>
           <geometry>
             <box>
-              <size>0.03 0.03 0.03</size>
+              <size>0.03 0.03 0.1</size>
             </box>
           </geometry>
           <surface>
@@ -1493,6 +1487,17 @@
                 <mu2>1.0</mu2>
               </ode>
             </friction>
+            <bounce>
+              <restitution_coefficient>0.0</restitution_coefficient>
+            </bounce>
+            <contact>
+              <ode>
+                <kp>10000</kp>
+                <kd>100</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
           </surface> 
         </collision>
         <visual name='visual'>
@@ -1504,7 +1509,7 @@
           <material>
             <ambient>0.8 0 0 1</ambient>
             <diffuse>0.8 0 0 1</diffuse>
-          <material>
+          </material>
         </visual>
       </link>
     </model>  

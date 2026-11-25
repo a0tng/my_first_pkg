@@ -84,14 +84,14 @@ class ArUcoParking(Node):
         self.marker_2d_pose_y = .0
         self.marker_2d_theta = .0
 
-        self.parking_distance_to_marker = 0.26
+        self.parking_distance_to_marker = 0.25
 
         self.previous_robot_2d_theta = .0
         self.total_robot_2d_theta = .0
         self.is_triggered = False
 
         self.is_sequence_finished = False
-        self.is_parking_retried = 0.26
+        self.is_parking_retried = False
 
         self.is_odom_received = False
         self.is_marker_pose_received = False
@@ -334,7 +334,7 @@ class ArUcoParking(Node):
             collision = ((rx >= -rear)&(rx <= front)&(np.abs(ry) <= side))
             if np.any(collision):
                 self.fn_stop()
-                self.get_logger().info('Collision detected', throtlle_duration_sec=1.0)
+                self.get_logger().info('Collision detected', throttle_duration_sec=1.0)
                 return
         self.pub_cmd_vel.publish(twist)
             

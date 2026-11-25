@@ -19,11 +19,11 @@ from my_first_pkg import kit_moveit_config
 LOG = get_logger('moveit_py_demo')
 
 HOME = [0.0, -1.501, 0.8029, 0.6981]         # pick_demo POSES['home'] = SRDF home          
-READY1 = [0.0, 0.0873, 0.0, -0.1222]
-APPROACH1 = [0.0,  0.8727, -0.1047, -0.7854] # pick_demo POSES['approach']
-LIFT = [0.0,  -0.7156, 0.6458, 0.0873]
-READY2 = [1.0996, -0.7156, 0.6458, 0.0873]
-APPROACH2 = [1.0996,  0.4189, 0.5585, -0.9774]
+READY1 = [0.0, 0.2094, -0.2269, -0.0175]
+APPROACH1 = [0.0873,  0.9250, -0.9425, 0.0873] # pick_demo POSES['approach']
+LIFT = [0.0,  -0.6632, 0.3665, 0.3316]
+READY2 = [0.0, 0.2094, -0.2269, -0.0175]
+APPROACH2 = [0.0,  0.4189, -0.1571, -0.2269]
 FRAME = 'base_footprint'                   # pose 목표 기준 좌표계 (모델 기준 좌표계)
 EE = 'end_effector_link'
 
@@ -257,7 +257,7 @@ def approach1_obstacle(ctx):
                  f'충돌 지점 {bad}/{len(pts)} (0이어야 정상)')
     log_joints(robot, 'approach1 obstacle')
 
-STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_position, '5': gripper_close, '6': lift, '7': ready2, '8': approach2_position, '9': gripper_open, '10': home}
+STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_pose, '5': gripper_close, '6': lift, '7': ready2, '8': approach2_position, '9': gripper_open, '10': home}
 
 class ManipulatorControl(Node):
 
