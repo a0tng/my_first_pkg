@@ -85,7 +85,8 @@ def generate_launch_description():
         'use_sim': 'false',
         'use_fake_hardware': 'false',
     }.items(),
-)
+    )
+
     launch_move_group = IncludeLaunchDescription(
     PythonLaunchDescriptionSource([
         PathJoinSubstitution([
@@ -98,13 +99,15 @@ def generate_launch_description():
     launch_arguments={
         'use_sim': 'false',
     }.items(),
-)
+    )
     
     launch_manipulator = Node(
         package='my_first_pkg',
         executable='moveit_py_demo',
+        arguments=['--serve'],
         output='screen',
     )
+
     core_node = Node(
             package='my_first_pkg',
             executable='core',
@@ -119,6 +122,8 @@ def generate_launch_description():
         marker_size_arg,
         launch_aruco,
         launch_nav2,
+        launch_base,
+        launch_move_group,
         launch_manipulator,
         core_node,
     ])
