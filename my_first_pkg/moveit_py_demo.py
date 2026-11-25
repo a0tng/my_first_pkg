@@ -15,7 +15,6 @@ from geometry_msgs.msg import PoseStamped, Pose
 from moveit_msgs.msg import Constraints, PositionConstraint, CollisionObject
 from shape_msgs.msg import SolidPrimitive
 from my_first_pkg import kit_moveit_config
-from linkattacher_msgs.srv import AttachLink, DetachLink
 
 LOG = get_logger('moveit_py_demo')
 
@@ -152,74 +151,6 @@ def gripper_close(ctx):
     plan_exec(robot, grip, '5 gripper close')
     log_joints(robot, 'gripper close')
 
-def _call_link_service(service_name, service_type):
-    """Gazebo LinkAttacher 서비스 호출."""
-    node = rclpy.create_node('link_attacher_client')
-
-    client = node.create_client(service_type, service_name)
-
-    if not client.wait_for_service(timeout_sec=3.0):
-        node.destroy_node()
-        raise RuntimeError(f'{service_name} service not available')
-
-    req = service_type.Request()
-
-    req.model1_name = 'turtlebot3_manipulation_system'
-    req.link1_name = 'link5'
-
-    req.model2_name = 'object1'
-    req.link2_name = 'link'
-
-    future = client.call_async(req)
-
-    rclpy.spin_until_future_complete(
-        node,
-        future,
-        timeout_sec=5.0
-    )
-
-    if not future.done():
-        node.destroy_node()
-        raise RuntimeError(f'{service_name} timeout')
-
-    result = future.result()
-    node.destroy_node()
-
-    if result is None:
-        raise RuntimeError(f'{service_name} failed')
-
-    return result
-
-
-def attach_object(ctx):
-    """Simulation only: object1을 gripper에 고정."""
-    if not ctx.get('sim', False):
-        return
-
-    LOG.info('Attach object1')
-
-    _call_link_service(
-        '/ATTACHLINK',
-        AttachLink
-    )
-
-    LOG.info('object1 attached')
-
-
-def detach_object(ctx):
-    """Simulation only: object1을 gripper에서 분리."""
-    if not ctx.get('sim', False):
-        return
-
-    LOG.info('Detach object1')
-
-    _call_link_service(
-        '/DETACHLINK',
-        DetachLink
-    )
-
-    LOG.info('object1 detached')
-
 def approach1_pose(ctx):
     """3 pose 목표(위치 + 방향). 4자유도라 방향을 마음대로 고를 수 없다."""
     robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach1_ee']
@@ -338,7 +269,7 @@ def approach1_obstacle(ctx):
                  f'충돌 지점 {bad}/{len(pts)} (0이어야 정상)')
     log_joints(robot, 'approach1 obstacle')
 
-STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_pose, '5': gripper_close, '6': attach_object, '7': lift, '8': ready2, '9': approach2_pose, '10': detach_object, '11': gripper_open, '12': home}
+STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_pose, '5': gripper_close, '6': lift, '7': ready2, '8': approach2_pose, '9': gripper_open, '10': home}
 
 class ManipulatorControl(Node):
 
@@ -361,9 +292,9 @@ class ManipulatorControl(Node):
 
     def control_callback(self, msg: String):
         if msg.data == 'pick_target':
-            sequence = ['1', '2', '3', '4', '5', '6', '7']
+            sequence = ['1', '2', '3', '4', '5', '6']
         elif msg.data == 'place_target':
-            sequence = ['8', '9', '10', '11', '12']
+            sequence = ['7', '8', '9', '10']
         else:
             self.get_logger().warn(f'Unknown command: {msg.data}')
             return
@@ -395,7 +326,6 @@ def main():
         'model': model,
         'arm': robot.get_planning_component('arm'),
         'grip': robot.get_planning_component('gripper'),
-        'sim' : args.sim,
     }
     # 2·3·4·6단계가 함께 쓰는 approach 상태와 그 말단 pose(FK)
     ctx['home_state'] = joint_state(model, HOME)
