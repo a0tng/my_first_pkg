@@ -6,18 +6,14 @@ from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.substitutions import PythonExpression
-
 
 def generate_launch_description():
     launch_mode_arg = DeclareLaunchArgument(
         'launch_mode',
-        default_value='simulation',
+        default_value='actual',
         description='launch mode type [simulation, actual]'
     )
     launch_mode = LaunchConfiguration('launch_mode')
-
-    use_sim = PythonExpression(['"', launch_mode, '" == "simulation"'])
 
     marker_size_arg = DeclareLaunchArgument(
         'marker_size',
@@ -42,20 +38,9 @@ def generate_launch_description():
             ])
         ]),
         launch_arguments={
-            'launch_mode': launch_mode,
+            'launch_mode': 'actual',
             'marker_size': marker_size,
         }.items(),
-    )
-
-    launch_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            PathJoinSubstitution([
-                FindPackageShare('my_first_pkg'),
-                'pkg_tools',
-                'launch',
-                'moveit_gazebo.launch.py'
-            ])
-        ]),
     )
 
     launch_nav2 = IncludeLaunchDescription(
@@ -68,7 +53,7 @@ def generate_launch_description():
             ])
         ]),
         launch_arguments={
-            'use_sim': use_sim,
+            'use_sim': 'false',
             'nav2_start_rviz': 'true',
 
             'map_yaml_file': PathJoinSubstitution([
@@ -90,7 +75,6 @@ def generate_launch_description():
     launch_manipulator = Node(
         package='my_first_pkg',
         executable='moveit_py_demo',
-        arguments=['--sim', '--serve',],
         output='screen',
     )
     core_node = Node(
@@ -106,7 +90,6 @@ def generate_launch_description():
         launch_mode_arg,
         marker_size_arg,
         launch_aruco,
-        launch_gazebo,
         launch_nav2,
         launch_manipulator,
         core_node,

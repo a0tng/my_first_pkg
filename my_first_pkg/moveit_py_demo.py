@@ -315,11 +315,10 @@ def main():
     ap = argparse.ArgumentParser(description='moveit_py 6단계 예제')
     ap.add_argument('--serve', action='store_true')
     ap.add_argument('--step', default='all', choices=list(STEPS) + ['all'], help='1~6 또는 all (기본 all)')
-    ap.add_argument('--sim', action='store_true', help='Gazebo: use_sim_time=True')
     args, _ = ap.parse_known_args(rclpy.utilities.remove_ros_args(sys.argv)[1:])
 
     rclpy.init()
-    robot = MoveItPy(node_name='moveit_py_demo', config_dict=kit_moveit_config.build(use_sim_time=args.sim))
+    robot = MoveItPy(node_name='moveit_py_demo', config_dict=kit_moveit_config.build(use_sim_time=False))
     model = robot.get_robot_model()
     ctx = {
         'robot': robot,
@@ -336,8 +335,7 @@ def main():
     ctx['ready2_state'] = joint_state(model, READY2)
     ctx['approach2_state'] = joint_state(model, APPROACH2)
     ctx['approach2_ee'] = ctx['approach2_state'].get_pose(EE)
-    LOG.info(f'model frame = {model.model_frame}, pose 목표 frame = {FRAME}, sim = {args.sim}, '
-             f'속도·가속도 스케일 = 0.1')
+    LOG.info(f'model frame = {model.model_frame}', f'pose 목표 frame = {FRAME}', f'속도·가속도 스케일 = 0.1')
     time.sleep(1.0)                                # /joint_states 수신 대기
 
     code = 0
