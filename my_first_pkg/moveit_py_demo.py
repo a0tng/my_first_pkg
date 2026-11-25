@@ -15,15 +15,16 @@ from geometry_msgs.msg import PoseStamped, Pose
 from moveit_msgs.msg import Constraints, PositionConstraint, CollisionObject
 from shape_msgs.msg import SolidPrimitive
 from my_first_pkg import kit_moveit_config
+from linkattacher_msgs.srv import AttachLink, DetachLink
 
 LOG = get_logger('moveit_py_demo')
 
 HOME = [0.0, -1.501, 0.8029, 0.6981]         # pick_demo POSES['home'] = SRDF home          
-READY1 = [0.0, 0.2094, -0.2269, -0.0175]
-APPROACH1 = [0.0873,  0.9250, -0.9425, 0.0873] # pick_demo POSES['approach']
+READY1 = [0.0698, 0.5934, -0.9076, 0.2967]
+APPROACH1 = [0.0698,  0.5585, -0.4189, -0.1571] # pick_demo POSES['approach']
 LIFT = [0.0,  -0.6632, 0.3665, 0.3316]
-READY2 = [0.0, 0.2094, -0.2269, -0.0175]
-APPROACH2 = [0.0,  0.4189, -0.1571, -0.2269]
+READY2 = [0.0, 0.5934, -0.9076, 0.2967]
+APPROACH2 = [0.0, 0.5585, -0.4189, -0.1571]
 FRAME = 'base_footprint'                   # pose 목표 기준 좌표계 (모델 기준 좌표계)
 EE = 'end_effector_link'
 
@@ -255,6 +256,18 @@ def approach1_position(ctx):
              f'(2단계 approach: {sum(APPROACH1[1:]):+.3f}) — 같은 위치여도 실행마다 달라진다')
     log_joints(robot, 'approach1 position')
 
+def approach2_pose(ctx):
+    """3 pose 목표(위치 + 방향). 4자유도라 방향을 마음대로 고를 수 없다."""
+    robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach2_ee']
+    # 3a: FK와 같은 위치 + 같은 방향 → 도달 가능 → 계획 성공
+    ps = PoseStamped()
+    ps.header.frame_id = FRAME
+    ps.pose = ee
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(pose_stamped_msg=ps, pose_link=EE)
+    plan_exec(robot, arm, '3 pose target', execute=True)
+    log_joints(robot, 'approach2 pose')
+
 def approach2_position(ctx):
     """4 위치만 목표 (반지름 5 mm 구). 손목 각은 IK가 정한다."""
     robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach2_ee']
@@ -325,7 +338,7 @@ def approach1_obstacle(ctx):
                  f'충돌 지점 {bad}/{len(pts)} (0이어야 정상)')
     log_joints(robot, 'approach1 obstacle')
 
-STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_pose, '5': gripper_close, '6': lift, '7': ready2, '8': approach2_position, '9': gripper_open, '10': home}
+STEPS = {'1': home, '2': gripper_open, '3': ready1, '4': approach1_pose, '5': gripper_close, '6': attach_object, '7': lift, '8': ready2, '9': approach2_pose, '10': detach_object, '11': gripper_open, '12': home}
 
 class ManipulatorControl(Node):
 
@@ -348,9 +361,9 @@ class ManipulatorControl(Node):
 
     def control_callback(self, msg: String):
         if msg.data == 'pick_target':
-            sequence = ['1', '2', '3', '4', '5', '6']
+            sequence = ['1', '2', '3', '4', '5', '6', '7']
         elif msg.data == 'place_target':
-            sequence = ['7', '8', '9', '10']
+            sequence = ['8', '9', '10', '11', '12']
         else:
             self.get_logger().warn(f'Unknown command: {msg.data}')
             return
@@ -382,6 +395,7 @@ def main():
         'model': model,
         'arm': robot.get_planning_component('arm'),
         'grip': robot.get_planning_component('gripper'),
+        'sim' : args.sim,
     }
     # 2·3·4·6단계가 함께 쓰는 approach 상태와 그 말단 pose(FK)
     ctx['home_state'] = joint_state(model, HOME)

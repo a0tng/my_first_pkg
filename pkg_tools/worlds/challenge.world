@@ -1460,7 +1460,7 @@
     </model>
     <model name='object1'>
       <static>false</static>
-      <pose>1.35 0.39 0.215 0 0 0</pose>
+      <pose>1.33 0.39 0.225 0 0 0</pose>
       <link name='link'>
         <gravity>true</gravity>
         <inertial>
@@ -1477,14 +1477,14 @@
        <collision name='collision'>
           <geometry>
             <box>
-              <size>0.03 0.03 0.1</size>
+              <size>0.03 0.03 0.10</size>
             </box>
           </geometry>
           <surface>
             <friction>
               <ode>
-                <mu>1.0</mu>
-                <mu2>1.0</mu2>
+                <mu>10.0</mu>
+                <mu2>10.0</mu2>
               </ode>
             </friction>
             <bounce>
@@ -1503,7 +1503,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.03 0.03 0.03</size>
+              <size>0.03 0.03 0.10</size>
             </box>
           </geometry>
           <material>
@@ -1513,5 +1513,6 @@
         </visual>
       </link>
     </model>  
+  <plugin name="gazebo_link_attacher" filename= "libgazebo_link_attacher.so"/>
   </world>
 </sdf>
