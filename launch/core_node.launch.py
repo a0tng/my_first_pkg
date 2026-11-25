@@ -86,20 +86,6 @@ def generate_launch_description():
         'use_fake_hardware': 'false',
     }.items(),
     )
-
-    launch_move_group = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource([
-        PathJoinSubstitution([
-            FindPackageShare('my_first_pkg'),
-            'pkg_tools',
-            'launch',
-            'move_group.launch.py'
-        ])
-    ]),
-    launch_arguments={
-        'use_sim': 'false',
-    }.items(),
-    )
     
     launch_manipulator = Node(
         package='my_first_pkg',
@@ -123,7 +109,6 @@ def generate_launch_description():
         launch_aruco,
         launch_nav2,
         launch_base,
-        launch_move_group,
         launch_manipulator,
         core_node,
     ])
