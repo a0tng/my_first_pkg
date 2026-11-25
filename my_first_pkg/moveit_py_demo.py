@@ -151,6 +151,74 @@ def gripper_close(ctx):
     plan_exec(robot, grip, '5 gripper close')
     log_joints(robot, 'gripper close')
 
+def _call_link_service(service_name, service_type):
+    """Gazebo LinkAttacher 서비스 호출."""
+    node = rclpy.create_node('link_attacher_client')
+
+    client = node.create_client(service_type, service_name)
+
+    if not client.wait_for_service(timeout_sec=3.0):
+        node.destroy_node()
+        raise RuntimeError(f'{service_name} service not available')
+
+    req = service_type.Request()
+
+    req.model1_name = 'turtlebot3_manipulation_system'
+    req.link1_name = 'link5'
+
+    req.model2_name = 'object1'
+    req.link2_name = 'link'
+
+    future = client.call_async(req)
+
+    rclpy.spin_until_future_complete(
+        node,
+        future,
+        timeout_sec=5.0
+    )
+
+    if not future.done():
+        node.destroy_node()
+        raise RuntimeError(f'{service_name} timeout')
+
+    result = future.result()
+    node.destroy_node()
+
+    if result is None:
+        raise RuntimeError(f'{service_name} failed')
+
+    return result
+
+
+def attach_object(ctx):
+    """Simulation only: object1을 gripper에 고정."""
+    if not ctx.get('sim', False):
+        return
+
+    LOG.info('Attach object1')
+
+    _call_link_service(
+        '/ATTACHLINK',
+        AttachLink
+    )
+
+    LOG.info('object1 attached')
+
+
+def detach_object(ctx):
+    """Simulation only: object1을 gripper에서 분리."""
+    if not ctx.get('sim', False):
+        return
+
+    LOG.info('Detach object1')
+
+    _call_link_service(
+        '/DETACHLINK',
+        DetachLink
+    )
+
+    LOG.info('object1 detached')
+
 def approach1_pose(ctx):
     """3 pose 목표(위치 + 방향). 4자유도라 방향을 마음대로 고를 수 없다."""
     robot, arm, ee = ctx['robot'], ctx['arm'], ctx['approach1_ee']
