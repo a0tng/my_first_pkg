@@ -1,28 +1,11 @@
-#!/usr/bin/env python3
-
-################################################################################
-# Copyright 2023 ROBOTIS CO., LTD.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-################################################################################
-
-# Authors: Leon Jung, Gilbert, ChanHyeong Lee
-
 from enum import Enum
 import math
+import time
 
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
+from rclpy.qos import qos_profile_sensor_data
 import numpy as np
 import rclpy
 from rclpy.node import Node
@@ -70,6 +53,16 @@ class ArUcoParking(Node):
                 parking retry stop initialization'
         )
 
+        self.scan_points = None
+        self.scan_time = 0.0
+
+        self.sub_scan = self.create_subscription(
+            LaserScan,
+            '/scan',
+            self.scan_callback,
+            qos_profile_sensor_data
+        )
+
         self.NearbySequence = Enum(
             'NearbySequence',
             'initial_turn go_straight turn_right parking'
@@ -98,12 +91,24 @@ class ArUcoParking(Node):
         self.is_triggered = False
 
         self.is_sequence_finished = False
-        self.is_parking_retried = False
+        self.is_parking_retried = 0.26
 
         self.is_odom_received = False
         self.is_marker_pose_received = False
 
         self.timer = self.create_timer(0.1, self._run)
+
+    def scan_callback(self, msg):
+        ranges = np.array(msg.ranges)
+        angles = (msg.angle_min + np.arange(len(ranges)) * msg.angle_increment) 
+        valid = (np.isfinite(ranges)) & (ranges >= msg.range_min) & (ranges <= msg.range_max)
+        if not np.any(valid | np.isposinf(ranges)):
+            self.scan_points = None
+            return
+        x = ranges[valid] * np.cos(angles[valid]) - 0.024
+        y = ranges[valid] * np.sin(angles[valid])
+        self.scan_points = (x, y)
+        self.scan_time = time.monotonic()
 
     def marker_id_callback(self, msg):
         if msg.data is not None:
@@ -304,6 +309,35 @@ class ArUcoParking(Node):
         else:
             return False
 
+    def safe_publish(self, twist):
+        if(self.scan_points is None or time.monotonic() - self.scan_time > 0.5):
+            self.fn_stop()
+            return
+        x, y = self.scan_points
+        v = twist.linear.x
+        w = twist.angular.z
+        front = 0.10 + 0.02
+        rear = 0.197 + 0.02
+        side = 0.153 + 0.02
+        for t in np.linspace(0.0, 0.4, 5):
+            theta = w * t
+            if abs(w) > 0.000001:
+                dx = (v / w) * (math.sin(theta))
+                dy = (v / w) * (1 - math.cos(theta))
+            else:
+                dx = v * t
+                dy = 0.0
+            px = x - dx
+            py = y - dy
+            rx = px * math.cos(theta) + py * math.sin(theta)
+            ry = -px * math.sin(theta) + py * math.cos(theta)
+            collision = ((rx >= -rear)&(rx <= front)&(np.abs(ry) <= side))
+            if np.any(collision):
+                self.fn_stop()
+                self.get_logger().info('Collision detected', throtlle_duration_sec=1.0)
+                return
+        self.pub_cmd_vel.publish(twist)
+            
     def fn_stop(self):
         twist = Twist()
         twist.linear.x = 0.0
@@ -325,7 +359,7 @@ class ArUcoParking(Node):
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = -angular_z
-        self.pub_cmd_vel.publish(twist)
+        self.safe_publish(twist)
 
     def fn_go_straight(self):
         twist = Twist()
@@ -335,7 +369,7 @@ class ArUcoParking(Node):
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = 0.0
-        self.pub_cmd_vel.publish(twist)
+        self.safe_publish(twist)
 
     def fn_go_back(self, theta):
         Kp = 0.6
@@ -349,7 +383,7 @@ class ArUcoParking(Node):
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = -angular_z
-        self.pub_cmd_vel.publish(twist)
+        self.safe_publish(twist)
 
     def fn_track_marker(self, theta):
         Kp = 0.6
@@ -363,7 +397,7 @@ class ArUcoParking(Node):
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = -angular_z
-        self.pub_cmd_vel.publish(twist)
+        self.safe_publish(twist)
 
     def get_2D_robot_pose(self, robot_odom_msg):
         quaternion = (
