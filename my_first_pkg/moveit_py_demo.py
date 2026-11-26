@@ -202,7 +202,8 @@ def attach_object(ctx):
 
     _call_link_service(
         '/ATTACHLINK',
-        AttachLink
+        AttachLink,
+        object_name
     )
 
     LOG.info(f'{object_name} attached')
@@ -219,7 +220,8 @@ def detach_object(ctx):
 
     _call_link_service(
         '/DETACHLINK',
-        DetachLink
+        DetachLink,
+        object_name
     )
 
     LOG.info(f'{object_name} detached')

@@ -172,7 +172,7 @@ class Core(Node):
             return
 
         place_msg = String()
-        place_msg.data = f'place_target{object_name}'
+        place_msg.data = f'place_target:{object_name}'
         self.manipulator_event.clear()
         self.manipulator_pub.publish(place_msg)
 
