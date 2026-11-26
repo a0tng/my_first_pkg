@@ -291,11 +291,18 @@ class ManipulatorControl(Node):
         self.get_logger().info('Manipulator ready.')
 
     def control_callback(self, msg: String):
-        if msg.data == 'pick_target':
-            sequence = ['1', '2', '3', '4', '5', '6']
-        elif msg.data == 'place_target':
-            sequence = ['7', '8', '9', '10']
+        parts = msg.data.split(':',1)
+        command = parts[0]
+        if len(parts) == 2:
+            object_name = parts[1]
         else:
+            object_name = 'object1'
+        self.ctx['object_name'] = object_name
+
+        if command == 'pick_target':
+            sequence = ['1', '2', '3', '4', '5', '6', '7']
+        elif command == 'place_target':
+            sequence = ['8', '9', '10', '11', '12']
             self.get_logger().warn(f'Unknown command: {msg.data}')
             return
         

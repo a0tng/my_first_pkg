@@ -21,6 +21,12 @@ def generate_launch_description():
         'scenario.yaml'
     ])
 
+    launch_initial_pose = Node(
+        package='my_first_pkg',
+        executable='go_to_pose',
+        output='screen',
+    )
+
     launch_aruco = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
@@ -97,6 +103,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         marker_size_arg,
+        launch_initial_pose,
         launch_aruco,
         launch_nav2,
         launch_base,
