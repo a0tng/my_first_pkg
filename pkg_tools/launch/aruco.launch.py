@@ -5,11 +5,6 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    laucnh_mode_arg = DeclareLaunchArgument(
-        'launch_mode',
-        default_value='actual',
-        description='launch mode type [simulation, actual]')
-    launch_mode = LaunchConfiguration('launch_mode')
 
     marker_size_arg = DeclareLaunchArgument(
         'marker_size',
@@ -23,7 +18,6 @@ def generate_launch_description():
         name='aruco_tracker',
         output='screen',
         parameters=[{
-            'launch_mode': launch_mode,
             'marker_size': marker_size,
         }],
     )
@@ -36,7 +30,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        laucnh_mode_arg,
         marker_size_arg,
         tracker_node,
         parking_node,

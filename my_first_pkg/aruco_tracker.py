@@ -16,10 +16,6 @@ class ArUcoTracker(Node):
     def __init__(self):
         super().__init__('aruco_tracker')
 
-        self.declare_parameter('launch_mode', 'actual')
-        launch_mode = self.get_parameter('launch_mode').value
-        self.get_logger().info(f'Launch mode is: {launch_mode}')
-
         self.declare_parameter('marker_size', 0.088)
         self.marker_size = self.get_parameter('marker_size').get_parameter_value().double_value
         self.get_logger().info(f'marker size: {self.marker_size}')

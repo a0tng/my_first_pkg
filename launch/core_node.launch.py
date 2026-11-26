@@ -8,13 +8,6 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    launch_mode_arg = DeclareLaunchArgument(
-        'launch_mode',
-        default_value='actual',
-        description='launch mode type [simulation, actual]'
-    )
-    launch_mode = LaunchConfiguration('launch_mode')
-
     marker_size_arg = DeclareLaunchArgument(
         'marker_size',
         default_value='0.088',
@@ -38,7 +31,6 @@ def generate_launch_description():
             ])
         ]),
         launch_arguments={
-            'launch_mode': 'actual',
             'marker_size': marker_size,
         }.items(),
     )
@@ -104,7 +96,6 @@ def generate_launch_description():
         )
 
     return LaunchDescription([
-        launch_mode_arg,
         marker_size_arg,
         launch_aruco,
         launch_nav2,
