@@ -111,9 +111,9 @@ class Core(Node):
 
         marker_msg = Int32()
         marker_msg.data = target_marker_id
-        self.target_marker_pub.publish(marker_msg)
-
+    
         self.parking_event.clear()
+        self.target_marker_pub.publish(marker_msg)    
         if not self.parking_event.wait(timeout=90.0):
             self.get_logger().error('Parking did not complete within timeout.')
             self.scenario_running = False
@@ -121,9 +121,9 @@ class Core(Node):
 
         pick_msg = String()
         pick_msg.data = 'pick_target'
-        self.manipulator_pub.publish(pick_msg)
-
+        
         self.manipulator_event.clear()
+        self.manipulator_pub.publish(pick_msg)
         if not self.manipulator_event.wait(timeout=30.0):
             self.get_logger().error('Manipulator pick_target did not complete within timeout.')
             self.scenario_running = False
@@ -165,9 +165,9 @@ class Core(Node):
 
         goal_marker_msg = Int32()
         goal_marker_msg.data = goal_marker_id
-        self.target_marker_pub.publish(goal_marker_msg)
 
         self.parking_event.clear()
+        self.target_marker_pub.publish(goal_marker_msg)
         if not self.parking_event.wait(timeout=90.0):
             self.get_logger().error('Parking did not complete within timeout.')
             self.scenario_running = False
@@ -175,9 +175,9 @@ class Core(Node):
 
         place_msg = String()
         place_msg.data = 'place_target'
-        self.manipulator_pub.publish(place_msg)
 
         self.manipulator_event.clear()
+        self.manipulator_pub.publish(place_msg)
         if not self.manipulator_event.wait(timeout=30.0):
             self.get_logger().error('Manipulator place_target did not complete within timeout.')
             self.scenario_running = False

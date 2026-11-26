@@ -335,7 +335,7 @@ def main():
     ctx['ready2_state'] = joint_state(model, READY2)
     ctx['approach2_state'] = joint_state(model, APPROACH2)
     ctx['approach2_ee'] = ctx['approach2_state'].get_pose(EE)
-    LOG.info(f'model frame = {model.model_frame}', f'pose 목표 frame = {FRAME}', f'속도·가속도 스케일 = 0.1')
+    LOG.info(f'model frame = {model.model_frame},' f'pose 목표 frame = {FRAME},' f'속도·가속도 스케일 = 0.1')
     time.sleep(1.0)                                # /joint_states 수신 대기
 
     code = 0
