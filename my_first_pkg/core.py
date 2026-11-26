@@ -9,7 +9,7 @@ from rclpy.node import Node
 from std_msgs.msg import Bool
 from std_msgs.msg import Int32
 from std_msgs.msg import String
-
+from std_srvs.srv import Trigger
 
 class Core(Node):
 
@@ -18,6 +18,11 @@ class Core(Node):
             'core',
             allow_undeclared_parameters=True,
             automatically_declare_parameters_from_overrides=True
+        )
+
+        self.initial_pose_client = self.create_client(
+            Trigger,
+            '/set_initial_pose'
         )
 
         self.target_marker_pub = self.create_publisher(
@@ -63,6 +68,15 @@ class Core(Node):
             thread.start()
         else:
             self.get_logger().info('A scenario is already running.')
+
+    def set_initial_pose(self):
+        if not self.initial_pose_client.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error('Initial pose service not available')
+            return False
+        future = self.initial_pose_client.call_async(Trigger.Request())
+        while not future.done():
+            time.sleep(0.1)
+        return future.result().success
 
     def parking_callback(self, msg: Bool):
         if msg.data:
@@ -111,6 +125,10 @@ class Core(Node):
         marker_msg.data = target_marker_id
         self.parking_event.clear()
         self.target_marker_pub.publish(marker_msg)
+
+        if not self.set_initial_pose():
+            self.scenario_running = False
+            return
 
         if not self.parking_event.wait(timeout=90.0):
             self.get_logger().error('Parking did not complete within timeout.')
