@@ -9,60 +9,33 @@
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
-   <depend>geometry_msgs</depend>
-
+  <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
-
   <depend>nav_msgs</depend>
-
   <depend>nav2_msgs</depend>
-
   <depend>shape_msgs</depend>
-
   <depend>moveit_msgs</depend>
-
   <!-- TF / Camera -->
-
   <depend>tf2_ros</depend>
-
   <depend>cv_bridge</depend>
-
   <!-- Launch -->
-
   <exec_depend>launch</exec_depend>
-
   <exec_depend>launch_ros</exec_depend>
-
   <!-- Nav2 -->
-
   <exec_depend>nav2_bringup</exec_depend>
-
   <exec_depend>nav2_simple_commander</exec_depend>
-
   <exec_depend>rviz2</exec_depend>
-
   <!-- ros2_control -->
-
   <exec_depend>controller_manager</exec_depend>
-
   <exec_depend>robot_state_publisher</exec_depend>
-
   <!-- TurtleBot3 Manipulation -->
-
   <exec_depend>turtlebot3_manipulation_bringup</exec_depend>
-
   <exec_depend>turtlebot3_manipulation_moveit_config</exec_depend>
-
   <!-- MoveIt -->
-
   <exec_depend>moveit_py</exec_depend>
-
   <!-- Xacro / package lookup -->
-
   <exec_depend>xacro</exec_depend>
-
   <exec_depend>ament_index_python</exec_depend>
-
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
