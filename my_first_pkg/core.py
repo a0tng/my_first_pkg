@@ -91,12 +91,15 @@ class Core(Node):
         self.scenario_running = True
 
         target_marker_id = 'scenario.' + self.selected_scenario + '.target_marker_id'
+        object_name = 'scenario.' + self.selected_scenario + '.object_name'
         goal_marker_id = 'scenario.' + self.selected_scenario + '.goal_marker_id'
         goal_pose_list = 'scenario.' + self.selected_scenario + '.goal_pose'
         end_pose_list = 'scenario.' + self.selected_scenario + '.end_pose'
 
         target_marker_id = self.get_parameter(
             target_marker_id).get_parameter_value().integer_value
+        object_name = self.get_parameter(
+            object_name).get_parameter_value().string_value
         goal_marker_id = self.get_parameter(
             goal_marker_id).get_parameter_value().integer_value
         goal_pose_list = self.get_parameter(
@@ -115,7 +118,7 @@ class Core(Node):
             return
 
         pick_msg = String()
-        pick_msg.data = 'pick_target'
+        pick_msg.data = f'pick_target:{object_name}'
         self.manipulator_event.clear()
         self.manipulator_pub.publish(pick_msg)
 
@@ -169,7 +172,7 @@ class Core(Node):
             return
 
         place_msg = String()
-        place_msg.data = 'place_target'
+        place_msg.data = f'place_target{object_name}'
         self.manipulator_event.clear()
         self.manipulator_pub.publish(place_msg)
 

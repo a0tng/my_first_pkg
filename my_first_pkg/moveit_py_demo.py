@@ -152,7 +152,7 @@ def gripper_close(ctx):
     plan_exec(robot, grip, '5 gripper close')
     log_joints(robot, 'gripper close')
 
-def _call_link_service(service_name, service_type):
+def _call_link_service(service_name, service_type, object_name):
     """Gazebo LinkAttacher 서비스 호출."""
     node = rclpy.create_node('link_attacher_client')
 
@@ -167,7 +167,7 @@ def _call_link_service(service_name, service_type):
     req.model1_name = 'turtlebot3_manipulation_system'
     req.link1_name = 'link5'
 
-    req.model2_name = 'object1'
+    req.model2_name = object_name
     req.link2_name = 'link'
 
     future = client.call_async(req)
@@ -196,14 +196,16 @@ def attach_object(ctx):
     if not ctx.get('sim', False):
         return
 
-    LOG.info('Attach object1')
+    object_name = ctx.get('object_name', 'object1')
+
+    LOG.info(f'Attach {object_name}')
 
     _call_link_service(
         '/ATTACHLINK',
         AttachLink
     )
 
-    LOG.info('object1 attached')
+    LOG.info(f'{object_name} attached')
 
 
 def detach_object(ctx):
@@ -211,14 +213,16 @@ def detach_object(ctx):
     if not ctx.get('sim', False):
         return
 
-    LOG.info('Detach object1')
+    object_name = ctx.get('object_name', 'object1')
+
+    LOG.info(f'Detach {object_name}')
 
     _call_link_service(
         '/DETACHLINK',
         DetachLink
     )
 
-    LOG.info('object1 detached')
+    LOG.info(f'{object_name} detached')
 
 def approach1_pose(ctx):
     """3 pose 목표(위치 + 방향). 4자유도라 방향을 마음대로 고를 수 없다."""
@@ -360,9 +364,17 @@ class ManipulatorControl(Node):
         self.get_logger().info('Manipulator ready.')
 
     def control_callback(self, msg: String):
-        if msg.data == 'pick_target':
+        parts = msg.data.split(':',1)
+        command = parts[0]
+        if len(parts) == 2:
+            object_name = parts[1]
+        else:
+            object_name = 'object1'
+        self.ctx['object_name'] = object_name
+
+        if command == 'pick_target':
             sequence = ['1', '2', '3', '4', '5', '6', '7']
-        elif msg.data == 'place_target':
+        elif command == 'place_target':
             sequence = ['8', '9', '10', '11', '12']
         else:
             self.get_logger().warn(f'Unknown command: {msg.data}')
