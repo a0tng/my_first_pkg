@@ -17,7 +17,7 @@ def build(use_sim_time=False, position_only_ik=None, vel_scale=0.1, acc_scale=0.
     urdf = xacro.process_file(os.path.join(
         get_package_share_directory('my_first_pkg'),
         'pkg_tools','urdf', 'turtlebot3_manipulation.urdf.xacro')).toxml()
-    with open(os.path.join(get_package_share_directory('my_first_pkg'),'pkg_tools', 'urdf', 'turtlebot3_manipulation.urdf.srdf')) as f:
+    with open(os.path.join(get_package_share_directory('my_first_pkg'),'pkg_tools', 'urdf', 'turtlebot3_manipulation.urdf.xacro')) as f:
         srdf = f.read()
     kin = _yaml('my_first_pkg','pkg_tools', 'config', 'kinematics.yaml')            # {'arm': {...}} — 키트와 같은 구조
     if position_only_ik is not None:
