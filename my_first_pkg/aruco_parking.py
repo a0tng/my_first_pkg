@@ -457,7 +457,6 @@ class ArUcoParking(Node):
         self.marker_frame = None
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
-        self.timer = self.create_timer(0.1, self.get_marker_odom)
 
         self.current_nearby_sequence = self.NearbySequence.initial_turn.value
         self.current_parking_sequence = self.ParkingSequence.waiting.value
@@ -478,9 +477,6 @@ class ArUcoParking(Node):
 
         self.is_odom_received = False
         self.is_marker_pose_received = False
-
-        self.timer = self.create_timer(0.1, self._run)
-
 
 def main(args=None):
     rclpy.init(args=args)

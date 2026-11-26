@@ -30,11 +30,6 @@ class Core(Node):
             '/manipulator_control',
             10
         )
-        self.nav_goal_pub = self.create_publisher(
-            PoseStamped,
-            '/goal_pose',
-            10
-        )
 
         self.scenario_sub = self.create_subscription(
             String,
@@ -111,9 +106,9 @@ class Core(Node):
 
         marker_msg = Int32()
         marker_msg.data = target_marker_id
+        self.parking_event.clear()
         self.target_marker_pub.publish(marker_msg)
 
-        self.parking_event.clear()
         if not self.parking_event.wait(timeout=90.0):
             self.get_logger().error('Parking did not complete within timeout.')
             self.scenario_running = False
@@ -121,9 +116,9 @@ class Core(Node):
 
         pick_msg = String()
         pick_msg.data = 'pick_target'
+        self.manipulator_event.clear()
         self.manipulator_pub.publish(pick_msg)
 
-        self.manipulator_event.clear()
         if not self.manipulator_event.wait(timeout=30.0):
             self.get_logger().error('Manipulator pick_target did not complete within timeout.')
             self.scenario_running = False
@@ -165,9 +160,9 @@ class Core(Node):
 
         goal_marker_msg = Int32()
         goal_marker_msg.data = goal_marker_id
+        self.parking_event.clear()
         self.target_marker_pub.publish(goal_marker_msg)
 
-        self.parking_event.clear()
         if not self.parking_event.wait(timeout=90.0):
             self.get_logger().error('Parking did not complete within timeout.')
             self.scenario_running = False
@@ -175,19 +170,45 @@ class Core(Node):
 
         place_msg = String()
         place_msg.data = 'place_target'
+        self.manipulator_event.clear()
         self.manipulator_pub.publish(place_msg)
 
-        self.manipulator_event.clear()
         if not self.manipulator_event.wait(timeout=30.0):
             self.get_logger().error('Manipulator place_target did not complete within timeout.')
             self.scenario_running = False
             return
         self.get_logger().info('Manipulator place_target completed.')
 
-        self.get_logger().info('Publishing nav2 message to home.')
-        end_pose_msg = self.list_to_pose_stamped(end_pose_list)
-        self.nav_goal_pub.publish(end_pose_msg)
+        self.get_logger().info('Sending navigation goal to home.')
 
+        home_goal = NavigateToPose.Goal()
+        home_goal.pose = self.list_to_pose_stamped(end_pose_list)
+
+        send_home_future = nav_action_client.send_goal_async(home_goal) 
+
+        while not send_home_future.done():
+            time.sleep(0.1)
+
+        home_goal_handle = send_home_future.result()
+
+        if not home_goal_handle.accepted:
+            self.get_logger().error('Home navigation goal rejected!')
+            self.scenario_running = False
+            return
+
+        home_result_future = home_goal_handle.get_result_async()
+
+        while not home_result_future.done():
+            time.sleep(0.1)
+
+        home_result = home_result_future.result()
+
+        if home_result.status != 4:
+            self.get_logger().error('Navigation to home failed!')
+            self.scenario_running = False
+            return
+
+        self.get_logger().info('Navigation to home completed.')
         self.get_logger().info('Scenario completed.')
         self.scenario_running = False
 

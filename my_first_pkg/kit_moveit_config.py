@@ -15,11 +15,11 @@ def _yaml(pkg, *path):
 def build(use_sim_time=False, position_only_ik=None, vel_scale=0.1, acc_scale=0.1, segment_fraction=0.002):
     cfg_pkg = 'turtlebot3_manipulation_moveit_config'
     urdf = xacro.process_file(os.path.join(
-        get_package_share_directory('turtlebot3_manipulation_description'),
+        get_package_share_directory('my_first_pkg'),
         'urdf', 'turtlebot3_manipulation.urdf.xacro')).toxml()
-    with open(os.path.join(get_package_share_directory(cfg_pkg), 'config', 'turtlebot3_manipulation.srdf')) as f:
+    with open(os.path.join(get_package_share_directory('my_first_pkg'), 'pkg_tools', 'config', 'turtlebot3_hsc_manipulation.srdf')) as f:
         srdf = f.read()
-    kin = _yaml(cfg_pkg, 'config', 'kinematics.yaml')            # {'arm': {...}} — 키트와 같은 구조
+    kin = _yaml('my_first_pkg','pkg_tools', 'config', 'kinematics.yaml')            # {'arm': {...}} — 키트와 같은 구조
     if position_only_ik is not None:
         kin['arm']['position_only_ik'] = position_only_ik
     ompl = {
