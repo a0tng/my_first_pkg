@@ -17,18 +17,12 @@ setup(
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
         (os.path.join('share', package_name, 'pkg_tools', 'launch'), glob('pkg_tools/launch/*.launch.py')),
         (os.path.join('share', package_name, 'pkg_tools', 'config'), glob('pkg_tools/config/*')),
-        (os.path.join('share', package_name, 'pkg_tools', 'gazebo'), glob('pkg_tools/gazebo/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'map'), glob('pkg_tools/map/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'param'), glob('pkg_tools/param/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'rviz'), glob('pkg_tools/rviz/*.rviz')),
         (os.path.join('share', package_name, 'pkg_tools', 'urdf'), glob('pkg_tools/urdf/*')),
-        (os.path.join('share', package_name, 'pkg_tools', 'worlds'), glob('pkg_tools/worlds/*')),
         (os.path.join('share', package_name, 'pkg_tools', 'ros2_control'), glob('pkg_tools/ros2_control/*')),
-    ] +[
-        (os.path.join('share', package_name, root), [os.path.join(root, f) for f in files])
-        for root, dirs, files in os.walk('pkg_tools/models')
-        if files
-    ],
+    ], 
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='lee',

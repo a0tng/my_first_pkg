@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-#
-# Copyright 2025 ROBOTIS CO., LTD.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Author: ChanHyeong Lee
-
 import cv2
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
@@ -34,7 +16,7 @@ class ArUcoTracker(Node):
     def __init__(self):
         super().__init__('aruco_tracker')
 
-        self.declare_parameter('launch_mode', 'simulation')
+        self.declare_parameter('launch_mode', 'actual')
         launch_mode = self.get_parameter('launch_mode').value
         self.get_logger().info(f'Launch mode is: {launch_mode}')
 
@@ -42,35 +24,20 @@ class ArUcoTracker(Node):
         self.marker_size = self.get_parameter('marker_size').get_parameter_value().double_value
         self.get_logger().info(f'marker size: {self.marker_size}')
 
-        if launch_mode == 'simulation':
-            self.sub_camera_info = self.create_subscription(
-                CameraInfo,
-                '/pi_camera/camera_info',
-                self.camera_info_callback,
-                qos_profile_sensor_data
+        self.sub_camera_info = self.create_subscription(
+            CameraInfo,
+            '/camera/camera_info',
+            self.camera_info_callback,
+            qos_profile_sensor_data
             )
-        elif launch_mode == 'actual':
-            self.sub_camera_info = self.create_subscription(
-                CameraInfo,
-                '/camera/camera_info',
-                self.camera_info_callback,
-                qos_profile_sensor_data
+        
+        self.sub_camera_image = self.create_subscription(
+            CompressedImage,
+            '/camera/image_raw/compressed',
+            self.image_callback,
+            qos_profile_sensor_data
             )
 
-        if launch_mode == 'simulation':
-            self.sub_camera_image = self.create_subscription(
-                CompressedImage,
-                '/pi_camera/image_raw/compressed',
-                self.image_callback,
-                qos_profile_sensor_data
-            )
-        elif launch_mode == 'actual':
-            self.sub_camera_image = self.create_subscription(
-                CompressedImage,
-                '/camera/image_raw/compressed',
-                self.image_callback,
-                qos_profile_sensor_data
-            )
 
         self.marker_dict_id = 'DICT_5X5_250'
 

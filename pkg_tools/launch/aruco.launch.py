@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     laucnh_mode_arg = DeclareLaunchArgument(
         'launch_mode',
-        default_value='simulation',
+        default_value='actual',
         description='launch mode type [simulation, actual]')
     launch_mode = LaunchConfiguration('launch_mode')
 
