@@ -181,13 +181,14 @@ class Core(Node):
 
         goal_marker_msg = Int32()
         goal_marker_msg.data = goal_marker_id
-        self.parking_event.clear()
-        self.target_marker_pub.publish(goal_marker_msg)
 
         if not self.parking_event.wait(timeout=90.0):
-            self.get_logger().error('Parking did not complete within timeout.')
-            self.scenario_running = False
-            return
+                    self.get_logger().error('Parking did not complete within timeout.')
+                    self.scenario_running = False
+                    return
+
+        self.parking_event.clear()
+        self.target_marker_pub.publish(goal_marker_msg)
 
         place_msg = String()
         place_msg.data = f'place_target:{object_name}'
